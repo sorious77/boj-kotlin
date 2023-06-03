@@ -1,44 +1,40 @@
-val moves = arrayOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
-var size = Pair(0, 0)
-var maps: Array<String> = arrayOf()
-var isVisit: Array<IntArray> = arrayOf()
-var answer = Int.MAX_VALUE
+import java.util.LinkedList
 
 fun main() {
     val (N, M) = readln().split(" ").map { it.toInt() }
 
-    size = Pair(N, M)
+    val moves = arrayOf(Pair(0, 1), Pair(0, -1), Pair(1, 0), Pair(-1, 0))
 
-    maps = arrayOf()
+    var maps: Array<String> = arrayOf()
     for (i in 0 until N) {
         maps += readln()
     }
 
-    isVisit = Array(N) { IntArray(M) { Int.MAX_VALUE } }
+    val queue = LinkedList<Triple<Int, Int, Int>>()
+    queue.offer(Triple(0, 0, 1))
 
-    dfs(0, 0, 1)
+    val isVisit: Array<BooleanArray> = Array(N) { BooleanArray(M) { false } }
+    isVisit[0][0] = true
+
+    var answer = 0
+    while (!queue.isEmpty()) {
+        val (x, y, count) = queue.poll()
+
+        if (x == M - 1 && y == N - 1) {
+            answer = count
+            break
+        }
+
+        for (move in moves) {
+            val (nx, ny) = Pair(x + move.first, y + move.second)
+
+            if ((nx in 0 until M) && (ny in 0 until N) && (maps[ny][nx] == '1') && !isVisit[ny][nx]) {
+                isVisit[ny][nx] = true
+
+                queue.offer(Triple(nx, ny, count + 1))
+            }
+        }
+    }
 
     println(answer)
-}
-
-fun dfs(x: Int, y: Int, count: Int) {
-    if (x == size.second - 1 && y == size.first - 1) {
-        answer = answer.coerceAtMost(count)
-
-        return
-    }
-
-    for (move in moves) {
-        val nx: Int = x + move.first
-        val ny: Int = y + move.second
-
-        if (!canMove(nx, ny, count + 1)) continue
-
-        isVisit[ny][nx] = count + 1
-        dfs(nx, ny, count + 1)
-    }
-}
-
-fun canMove(x: Int, y: Int, count: Int): Boolean {
-    return (x in 0 until size.second) && (y in 0 until size.first) && (count < isVisit[y][x]) && (maps[y][x] == '1')
 }
